@@ -1,0 +1,5 @@
+*.pyc
+*.RData
+*submission.csv
+data/train.csv
+data/test.csv
