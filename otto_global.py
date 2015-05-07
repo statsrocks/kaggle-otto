@@ -49,6 +49,11 @@ def turn_class_list_to_int_list(my_array):
 
 
 def load_train_data(path=None, train_size=0.8, full_train=False):
+    """
+    Load the train data.
+    If full_train=False (default), the function would return (X_train, X_valid, y_train, y_valid) based on the train_size.
+    If full_train=True, the function would return (X_train, X_valid, y_train, y_valid), where in fact X_valid and y_valid are None.
+    """
     if path is None:
         try:
             # Unix
@@ -76,6 +81,10 @@ def load_train_data(path=None, train_size=0.8, full_train=False):
 
 
 def load_test_data(path=None):
+    """
+    Load the test data.
+    It returns (X_test, X_test_ids).
+    """
     if path is None:
         try:
             # Unix
@@ -92,6 +101,9 @@ def load_test_data(path=None):
 
 
 def df_to_csv(df, path_or_buf='hey-submission.csv', index=False, *args, **kwargs):
+    """
+    Save pd.DataFrame to csv, defaultly to 'hey-submission.csv'.
+    """
     df.to_csv(path_or_buf, index=index, *args, **kwargs)
     tmp = pd.read_csv(path_or_buf)
     print(tmp.head())
