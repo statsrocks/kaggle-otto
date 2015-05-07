@@ -100,13 +100,13 @@ def main():
         'nthread': 8
     }
 
-    X_train, X_valid, y_train, y_valid = load_train_data(train_size=train_size)
+    X_train, X_valid, y_train, y_valid, scaler = load_train_data(train_size=train_size)
     X_test, X_test_ids = load_test_data()
     bst = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round, num_fold, use_cv=False)
     pred = predict_from_xgb_model(bst, X_test)
     df_to_csv(pred, 'non-cv-submission.csv')
 
-    X_train, X_valid, y_train, y_valid = load_train_data(full_train=True)
+    X_train, X_valid, y_train, y_valid, scaler = load_train_data(full_train=True)
     X_test, X_test_ids = load_test_data()
     bst_cv_result = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round, num_fold, use_cv=True)
     # How to interpret it? We get the best num_round?!

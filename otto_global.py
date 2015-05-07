@@ -9,6 +9,7 @@ import numpy as np
 import scipy as sp
 import pandas as pd
 from sklearn.cross_validation import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 
 def logloss_mc(y_true, y_prob, epsilon=1e-15):
@@ -48,11 +49,11 @@ def turn_class_list_to_int_list(my_array):
     return new_array.astype('int')
 
 
-def load_train_data(path=None, train_size=0.8, full_train=False):
+def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False):
     """
     Load the train data.
-    If full_train=False (default), the function would return (X_train, X_valid, y_train, y_valid) based on the train_size.
-    If full_train=True, the function would return (X_train, X_valid, y_train, y_valid), where in fact X_valid and y_valid are None.
+    If full_train=False (default), the function would return (X_train, X_valid, y_train, y_valid, scaler) based on the train_size.
+    If full_train=True, the function would also return (X_train, X_valid, y_train, y_valid, scaler), but where in fact X_valid and y_valid are None.
     """
     if path is None:
         try:
@@ -66,18 +67,26 @@ def load_train_data(path=None, train_size=0.8, full_train=False):
     X = df.values.copy()
     np.random.shuffle(X)
     X[:, -1] = turn_class_list_to_int_list(X[:, -1])
+
+    # whether scale it or not, we return the scaler!
+    scaler = StandardScaler()
+    scaler = scaler.fit(X[:, 1:-1])
+    if scale_it:
+        X[:, 1:-1] = scaler.transform(X[:, 1:-1])
+
     if not full_train:
         X_train, X_valid, y_train, y_valid = train_test_split(
         X[:, 1:-1], X[:, -1], train_size=train_size,
     )
         print('Loaded training data and splited it into training and validating.')
         return (X_train.astype(float), X_valid.astype(float),
-            y_train.astype(int), y_valid.astype(int))
+            y_train.astype(int), y_valid.astype(int), scaler)
+
     elif full_train:
         X_train, X_valid, y_train, y_valid = X[:, 1:-1], None, X[:, -1], None
         print('Loaded training data.')
         return (X_train.astype(float), X_valid,
-            y_train.astype(int), y_valid)
+            y_train.astype(int), y_valid, scaler)
 
 
 def load_test_data(path=None):
