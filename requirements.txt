@@ -1,0 +1,15 @@
+scipy
+numpy
+matplotlib
+pandas
+scikit-learn
+statsmodels
+pillow
+joblib
+Theano
+tabulate
+git+https://github.com/benanne/Lasagne.git@91aa9ec44f#egg=Lasagne
+nolearn
+xgboost==0.40
+PySide
+ipython[all]
