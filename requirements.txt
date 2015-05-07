@@ -11,5 +11,6 @@ tabulate
 git+https://github.com/benanne/Lasagne.git@91aa9ec44f#egg=Lasagne
 nolearn
 xgboost==0.40
+ggplot
 PySide
 ipython[all]

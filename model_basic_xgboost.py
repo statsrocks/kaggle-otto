@@ -6,6 +6,8 @@ import pandas as pd
 
 import xgboost as xgb
 
+from ggplot import *
+
 from otto_global import load_train_data, load_test_data, df_to_csv
 
 
@@ -38,6 +40,7 @@ def hey_xgb_model(X_train, X_valid, y_train, y_valid,
         bst = xgb.train(params=xgb_param, dtrain=xg_train, num_boost_round=num_round, evals=watchlist)
     elif use_cv:
         bst = xgb.cv(params=xgb_param, dtrain=xg_train, num_boost_round=num_round, nfold=num_fold)
+        bst = _parse_bst_cv_result(bst)
 
     return bst
 
@@ -52,6 +55,30 @@ def predict_from_xgb_model(bst, X_test, X_test_ids=None, get_df=True):
         X_test_ids = np.array(range(1, nrow_test+1))
     df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(pred)], axis=1)
     df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    return df
+
+
+def _parse_bst_cv_result(bst_cv_result, 
+    header=['iter_from_zero', 'test_mlogloss', 'test_mlogloss_sd',
+        'train_mlogloss', 'train_mlogloss_sd'], return_df=True):
+    """
+    If using bst_cv_result=xgb.cv(), bst_cv_result would be a list of test instead of the models.
+    So this function parse this result, and return a pd.DataFrame.
+    """
+    results_list = [
+        [
+            int(result.split('[')[1].split(']')[0]),
+            float(result.split(':')[1].split('+')[0]),
+            float(result.split(':')[1].split('+')[1].split('\t')[0]),
+            float(result.split(':')[2].split('+')[0]),
+            float(result.split(':')[2].split('+')[1]),
+        ]
+        for result in bst_cv_result
+    ]
+    df = pd.DataFrame(results_list, columns=header)
+    if not return_df:
+        # return list of list instead
+        return results_list
     return df
 
 
@@ -83,6 +110,7 @@ def main():
     X_test, X_test_ids = load_test_data()
     bst_cv_result = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round, num_fold, use_cv=True)
     # How to interpret it? We get the best num_round?!
+    ggplot(aes(x='iter_from_zero', y='test_mlogloss'), data=bst_cv_result) + geom_line()
     bst = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round=91, num_fold=num_fold, use_cv=False)
     pred = predict_from_xgb_model(bst, X_test)
     df_to_csv(pred, 'oh-cv-submission.csv')
