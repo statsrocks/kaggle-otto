@@ -22,6 +22,14 @@ We should learn from the [official guide](http://nbviewer.ipython.org/github/ott
 
 ## warning
 * when the bugs occur, check whether we clean the `*.pyc* files and restart iPython again.
+* Everytime we start iPython, we should run the following first:
+
+  ```python
+  %load_ext autoreload
+  %autoreload 2
+  ```
+
+  See [this post](http://stackoverflow.com/questions/1907993/autoreload-of-modules-in-ipython/10472712#10472712) for details.
 
 ## git usage
 * the files committed to gitlab should always be runnable.
