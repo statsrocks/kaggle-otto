@@ -104,14 +104,15 @@ def load_test_data(path=None, scaler=None):
     else:
         df = pd.read_csv(path)
     X = df.values
+    
+    X_test, X_test_ids = X[:, 1:].astype(float), X[:, 0].astype(int)
 
     # we want to scale it based on the training set!
     if not (scaler is None):
-        X[:, 1:] = scaler.transform(X[:, 1:])
-    
-    X_test, X_test_ids = X[:, 1:], X[:, 0]
+        X_test = scaler.transform(X_test)
+
     print('Loaded testing data.')
-    return X_test.astype(float), X_test_ids.astype(int)
+    return X_test, X_test_ids
 
 
 def df_to_csv(df, path_or_buf='hey-submission.csv', index=False, *args, **kwargs):
