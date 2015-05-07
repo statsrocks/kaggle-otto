@@ -89,7 +89,7 @@ def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False)
             y_train.astype(int), y_valid, scaler)
 
 
-def load_test_data(path=None):
+def load_test_data(path=None, scaler=None):
     """
     Load the test data.
     It returns (X_test, X_test_ids).
@@ -104,6 +104,11 @@ def load_test_data(path=None):
     else:
         df = pd.read_csv(path)
     X = df.values
+
+    # we want to scale it based on the training set!
+    if not (scaler is None):
+        X[:, 1:] = scaler.transform(X[:, 1:])
+    
     X_test, X_test_ids = X[:, 1:], X[:, 0]
     print('Loaded testing data.')
     return X_test.astype(float), X_test_ids.astype(int)
