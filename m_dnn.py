@@ -56,18 +56,6 @@ def sample_lsg_model(X_train, y_train, max_epochs=20):
     return dnn_model
 
 
-def predict_from_lsg_model(dnn_model, X_test, X_test_ids=None, get_df=True):
-    pred = dnn_model.predict_proba(X_test)
-    if not get_df:
-        return pred
-    if X_test_ids is None:
-        nrow_test = pred.shape[0]
-        X_test_ids = np.array(range(1, nrow_test+1))
-    df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(pred)], axis=1)
-    df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
-    return df
-
-
 def parse_lsg_model(lsg_model, plot_it=True):
     """
     Interpred and plot the chaning in dnn_model
@@ -79,7 +67,7 @@ def parse_lsg_model(lsg_model, plot_it=True):
 
 
 
-def sample_keras_model(X_train, y_train, max_epochs=20, train_size=0.8):
+def sample_keras_model(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8):
     """
     https://github.com/fchollet/keras/blob/master/examples/kaggle_otto_nn.py
     """
@@ -112,18 +100,26 @@ def sample_keras_model(X_train, y_train, max_epochs=20, train_size=0.8):
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, validation_split=1-train_size)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, validation_split=1-train_size, show_accuracy=True)
 
     return model
     
 
-def predict_from_keras_model(dnn_model, X_test, X_test_ids=None, get_df=True):
+def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
+    """
+    It accepts the result of dnn model and predict the probabilites of test.
+    The most awesome thing is that it supports both lsg and keras models! Because they use model.predict_proba() both!
+    Returns df if get_df=True, returns matrix if get_df=False .
+    """
+    pred = dnn_model.predict_proba(X_test)
+    if not get_df:
+        return pred
     if X_test_ids is None:
         nrow_test = pred.shape[0]
         X_test_ids = np.array(range(1, nrow_test+1))
-    #df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(pred)], axis=1)
-    #df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
-    #return df
+    df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(pred)], axis=1)
+    df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    return df
 
 
 def main():
@@ -134,9 +130,15 @@ def main():
     X_train, y_train = float32(X_train), int32(y_train)
     X_test, X_test_ids = load_test_data(scaler=scaler)
     X_test = float32(X_test)
-    dnn_model = sample_lsg_model(X_train, y_train, max_epochs=num_round)
-    pred = predict_from_lsg_model(dnn_model, X_test)
-    df_to_csv(pred, 'oh-dnn-submission.csv')
+
+    lsg_model = sample_lsg_model(X_train, y_train, max_epochs=num_round)
+    pred = predict_from_dnn_model(lsg_model, X_test)
+    df_to_csv(pred, 'oh-lsg-submission.csv')
+
+    keras_model = sample_keras_model(X_train, y_train, max_epochs=54)
+    pred = predict_from_dnn_model(keras_model, X_test)
+    df_to_csv(pred, 'oh-keras-submission.csv')
+    
 
 
 if __name__ == '__main__':
