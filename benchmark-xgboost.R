@@ -38,6 +38,14 @@
 # I'm completely lost now -- may be I'm doing something fundamentally wrong.
 # Interesting - I'm using colsample_bytree, and min_child_weight as well.
 
+# My submission is based on 4 types of models, 2 by NN(pylearn2) and 2 by xgboost.
+# I built 30 models of each type with the same parameters except random seeds and averaged them.
+# 0.4 * (NN1+NN2) + 0.1 * (xgb1+xgb2) gave me 0.40110 LB score.
+# The reason for building 30 models for each type is that they are unstable especially for NN.
+# The unstability come from randomized components, randomized feature extraction for NN1 and a randomized sparse layer for NN2.
+# The key point of my method is that I tuned NN hyper parameters for an averaging model rather than for a single model.
+
+
 require(xgboost)
 require(methods)
 
