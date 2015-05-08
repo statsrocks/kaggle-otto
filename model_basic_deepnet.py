@@ -17,7 +17,7 @@ from ggplot import *
 from otto_global import logloss_mc, load_train_data, load_test_data, df_to_csv, float32, int32
 
 
-def hey_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=20):
+def sample_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=20):
     num_classes = len(np.unique(y_train))
     num_features = X_train.shape[1]
 
@@ -74,18 +74,11 @@ def main():
     train_size = 0.8
     num_round = 250
 
-    # X_train, X_valid, y_train, y_valid, scaler = load_train_data(train_size=train_size, scale_it=True)
-    # X_train, X_valid, y_train, y_valid = float32(X_train), float32(X_valid), int32(y_train), int32(y_valid)
-    # X_test, X_test_ids = load_test_data(scaler=scaler)
-    # X_test = float32(X_test)
-    # dnn_model = hey_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=num_round)
-    # pred = predict_from_dnn_model(dnn_model, X_test)
-
     X_train, _, y_train, _, scaler = load_train_data(full_train=True, scale_it=True)
     X_train, y_train = float32(X_train), int32(y_train)
     X_test, X_test_ids = load_test_data(scaler=scaler)
     X_test = float32(X_test)
-    dnn_model = hey_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=num_round)
+    dnn_model = sample_dnn_model(X_train, None, y_train, None, max_epochs=num_round)
     pred = predict_from_dnn_model(dnn_model, X_test)
     df_to_csv(pred, 'oh-dnn-submission.csv')
 
