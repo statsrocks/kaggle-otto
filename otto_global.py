@@ -10,6 +10,7 @@ import scipy as sp
 import pandas as pd
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import log_loss
 
 
 def float32(k):
@@ -19,19 +20,12 @@ def int32(k):
     return np.cast['int32'](k)
 
 
-def logloss_mc(y_true, y_prob, epsilon=1e-15):
+def log_loss_mc(y_true, y_pred, eps=1e-15, normalize=True, sample_weight=None):
     """ Multiclass logloss
-    This function is not officially provided by Kaggle, so there is no
-    guarantee for its correctness.
+    Exactly http://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html#sklearn.metrics.log_loss .
     See https://www.kaggle.com/c/otto-group-product-classification-challenge/details/evaluation .
     """
-    # normalize
-    y_prob = y_prob / y_prob.sum(axis=1).reshape(-1, 1)
-    y_prob = np.maximum(epsilon, y_prob)
-    y_prob = np.minimum(1 - epsilon, y_prob)
-    # get probabilities
-    y = [y_prob[i, j] for (i, j) in enumerate(y_true)]
-    ll = - np.mean(np.log(y))
+    ll = log_loss(y_true, y_pred, eps, normalize, sample_weight)
     return ll
 
 
