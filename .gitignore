@@ -1,6 +1,7 @@
 *.pyc
 *.RData
 *.pdf
+*.ipynb
 *submission.csv
 data/train.csv
 data/test.csv
