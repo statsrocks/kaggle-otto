@@ -100,7 +100,7 @@ def sample_keras_model(X_train, y_train, max_epochs=20, batch_size=16, train_siz
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, validation_split=1-train_size, show_accuracy=True)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, verbose=2,validation_split=1-train_size, show_accuracy=True)
 
     return model
     
