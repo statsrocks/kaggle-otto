@@ -12,6 +12,13 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
+def float32(k):
+    return np.cast['float32'](k)
+
+def int32(k):
+    return np.cast['int32'](k)
+
+
 def logloss_mc(y_true, y_prob, epsilon=1e-15):
     """ Multiclass logloss
     This function is not officially provided by Kaggle, so there is no

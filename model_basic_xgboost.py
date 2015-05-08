@@ -87,9 +87,9 @@ def main():
     num_round = 250
     num_fold = 3
     xgb_basic_param = {
-        'eta': 0.3,
-        'gamma': 1.0,
-        'max_depth': 10,
+        'eta': 0.3, # maybe low
+        'gamma': 1.0, # maybe less than 1
+        'max_depth': 10, # absolutely less than 10
         'min_child_weight': 4,
         'max_delta_step': 0,
         'colsample_bytree': 0.8,
