@@ -21,7 +21,7 @@ def hey_xgb_model(X_train, X_valid, y_train, y_valid,
     xgb_force_param = {
         'objective': 'multi:softprob',
         'eval_metric': 'mlogloss',
-        'num_class': 9,
+        'num_class': 9
     }
     if xgb_param is None:
         xgb_param = xgb_force_param
