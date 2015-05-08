@@ -74,6 +74,7 @@ def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False)
     X = df.values.copy()
     np.random.shuffle(X)
     X[:, -1] = turn_class_list_to_int_list(X[:, -1])
+    X = X.astype(float)
 
     # whether scale it or not, we return the scaler!
     scaler = StandardScaler()
@@ -111,6 +112,7 @@ def load_test_data(path=None, scaler=None):
     else:
         df = pd.read_csv(path)
     X = df.values
+    X = X.astype(float)
     
     X_test, X_test_ids = X[:, 1:].astype(float), X[:, 0].astype(int)
 
