@@ -7,17 +7,25 @@ import pandas as pd
 from lasagne.layers import DenseLayer
 from lasagne.layers import InputLayer
 from lasagne.layers import DropoutLayer
+from lasagne.layers import DropoutLayer
 from lasagne.nonlinearities import softmax
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import BatchIterator
 from nolearn.lasagne import NeuralNet
+
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation
+from keras.layers.normalization import BatchNormalization
+from keras.layers.advanced_activations import PReLU
+from keras.utils import np_utils, generic_utils
 
 from ggplot import *
 
 from otto_global import logloss_mc, load_train_data, load_test_data, df_to_csv, float32, int32
 
 
-def sample_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=20):
+
+def sample_lsg_model(X_train, y_train, max_epochs=20):
     num_classes = len(np.unique(y_train))
     num_features = X_train.shape[1]
 
@@ -48,7 +56,7 @@ def sample_dnn_model(X_train, X_valid, y_train, y_valid, max_epochs=20):
     return dnn_model
 
 
-def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
+def predict_from_lsg_model(dnn_model, X_test, X_test_ids=None, get_df=True):
     pred = dnn_model.predict_proba(X_test)
     if not get_df:
         return pred
@@ -60,14 +68,62 @@ def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
     return df
 
 
-def parse_dnn_model(dnn_model, plot_it=True):
+def parse_lsg_model(lsg_model, plot_it=True):
     """
     Interpred and plot the chaning in dnn_model
     """
-    df = pd.DataFrame(dnn_model.train_history_)
+    df = pd.DataFrame(lsg_model.train_history_)
     if plot_it:
         ggplot(aes(x='epoch', y='valid_loss'), data=df) + geom_line()
     return df
+
+
+
+def sample_keras_model(X_train, y_train, max_epochs=20, train_size=0.8):
+    """
+    https://github.com/fchollet/keras/blob/master/examples/kaggle_otto_nn.py
+    """
+    num_classes = len(np.unique(y_train))
+    num_features = X_train.shape[1]
+
+    print("Building model...")
+
+    model = Sequential()
+    model.add(Dense(num_features, 512, init='glorot_uniform'))
+    model.add(PReLU((512,)))
+    model.add(BatchNormalization((512,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(512, 512, init='glorot_uniform'))
+    model.add(PReLU((512,)))
+    model.add(BatchNormalization((512,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(512, 512, init='glorot_uniform'))
+    model.add(PReLU((512,)))
+    model.add(BatchNormalization((512,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(512, num_classes, init='glorot_uniform'))
+    model.add(Activation('softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer="adam")
+
+    print("Training model...")
+    X = X_train
+    y = np_utils.to_categorical(y_train)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, validation_split=1-train_size)
+
+    return model
+    
+
+def predict_from_keras_model(dnn_model, X_test, X_test_ids=None, get_df=True):
+    if X_test_ids is None:
+        nrow_test = pred.shape[0]
+        X_test_ids = np.array(range(1, nrow_test+1))
+    #df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(pred)], axis=1)
+    #df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    #return df
 
 
 def main():
@@ -78,8 +134,8 @@ def main():
     X_train, y_train = float32(X_train), int32(y_train)
     X_test, X_test_ids = load_test_data(scaler=scaler)
     X_test = float32(X_test)
-    dnn_model = sample_dnn_model(X_train, None, y_train, None, max_epochs=num_round)
-    pred = predict_from_dnn_model(dnn_model, X_test)
+    dnn_model = sample_lsg_model(X_train, y_train, max_epochs=num_round)
+    pred = predict_from_lsg_model(dnn_model, X_test)
     df_to_csv(pred, 'oh-dnn-submission.csv')
 
 
