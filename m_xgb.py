@@ -97,7 +97,8 @@ def main():
         'objective': 'multi:softprob',
         'eval_metric': 'mlogloss',
         'num_class': 9,
-        'nthread': 8
+        'nthread': 8,
+        'seed': np.random.randint(0, 2**32)
     }
 
     X_train, X_valid, y_train, y_valid, _ = load_train_data(train_size=train_size)
@@ -106,12 +107,12 @@ def main():
     pred = predict_from_xgb_model(bst, X_test)
     df_to_csv(pred, 'non-cv-submission.csv')
 
-    X_train, X_valid, y_train, y_valid, _ = load_train_data(full_train=True)
+    full_X_train, _, full_y_train, _, _ = load_train_data(full_train=True)
     X_test, X_test_ids = load_test_data()
-    bst_cv_result = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round, num_fold, use_cv=True)
+    bst_cv_result = hey_xgb_model(full_X_train, None, full_y_train, None, xgb_basic_param, num_round, num_fold, use_cv=True)
     # How to interpret it? We get the best num_round?!
     ggplot(aes(x='iter_from_zero', y='test_mlogloss'), data=bst_cv_result[50:].reset_index()) + geom_line()
-    bst = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_basic_param, num_round=91, num_fold=num_fold, use_cv=False)
+    bst = hey_xgb_model(full_X_train, None, full_y_train, None, xgb_basic_param, num_round=91, num_fold=num_fold, use_cv=False)
     pred = predict_from_xgb_model(bst, X_test)
     df_to_csv(pred, 'oh-cv-submission.csv')
 
