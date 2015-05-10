@@ -2,6 +2,7 @@
 *.RData
 *.pdf
 *.ipynb
+*.pickle
 *submission.csv
 data/train.csv
 data/test.csv

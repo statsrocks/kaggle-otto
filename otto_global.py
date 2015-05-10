@@ -12,6 +12,8 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import log_loss
 
+import sys
+import cPickle as pickle
 import itertools
 
 
@@ -164,3 +166,15 @@ def expand_grid(*args, **kwargs):
         columns += kwargs.iterkeys()
         lst += kwargs.itervalues()
     return pd.DataFrame(list(itertools.product(*lst)), columns=columns)
+
+def save_variable(obj, file_name, recursionlimit=10000):
+    sys.setrecursionlimit(recursionlimit)
+    with open(file_name, 'wb') as f:
+        pickle.dump(obj, f, -1)
+    return True
+
+def load_variable(file_name):
+    """
+    usage: something = load_variable('hey.pickle')
+    """
+    return pickle.load(open(file_name, 'rb'))
