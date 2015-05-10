@@ -22,7 +22,7 @@ from keras.optimizers import SGD, Adagrad, Adadelta, RMSprop, Adam
 
 from ggplot import *
 
-from otto_global import logloss_mc, load_train_data, load_test_data, df_to_csv, float32, int32
+from otto_global import logloss_mc, load_train_data, load_test_data, df_to_csv, float32, int32, save_variable, load_variable
 
 
 
@@ -101,84 +101,9 @@ def sample_keras_model(X_train, y_train, max_epochs=20, batch_size=16, train_siz
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2,validation_split=1-train_size, show_accuracy=True)
+    history = model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2,validation_split=1-train_size, show_accuracy=True)
 
-    return model
-
-
-
-class MySequential(Sequential):
-    """
-    After fitting, we can check the val_loss and val_acc in model.train_history_
-    """
-    def fit(self, X, y, batch_size=128, nb_epoch=100, verbose=1,
-            validation_split=0., validation_data=None, shuffle=True, show_accuracy=False):
-        from keras.models import standardize_y, Progbar, make_batches
-        y = standardize_y(y)
-
-        do_validation = False
-        if validation_data:
-            try:
-                X_val, y_val = validation_data
-            except:
-                raise Exception("Invalid format for validation data; provide a tuple (X_val, y_val).")
-            do_validation = True
-            y_val = standardize_y(y_val)
-            if verbose:
-                print("Train on %d samples, validate on %d samples" % (len(y), len(y_val)))
-        else:
-            if 0 < validation_split < 1:
-                # If a validation split size is given (e.g. validation_split=0.2)
-                # then split X into smaller X and X_val,
-                # and split y into smaller y and y_val.
-                do_validation = True
-                split_at = int(len(X) * (1 - validation_split))
-                (X, X_val) = (X[0:split_at], X[split_at:])
-                (y, y_val) = (y[0:split_at], y[split_at:])
-                if verbose:
-                    print("Train on %d samples, validate on %d samples" % (len(y), len(y_val)))
-
-        index_array = np.arange(len(X))
-        train_history = {'val_acc':[], 'val_loss':[]}
-        for epoch in range(nb_epoch):
-            if verbose:
-                print('Epoch', epoch)
-                progbar = Progbar(target=len(X), verbose=verbose)
-            if shuffle:
-                np.random.shuffle(index_array)
-
-            batches = make_batches(len(X), batch_size)
-            for batch_index, (batch_start, batch_end) in enumerate(batches):
-                if shuffle:
-                    batch_ids = index_array[batch_start:batch_end]
-                else:
-                    batch_ids = slice(batch_start, batch_end)
-                X_batch = X[batch_ids]
-                y_batch = y[batch_ids]
-
-                if show_accuracy:
-                    loss, acc = self._train_with_acc(X_batch, y_batch)
-                    log_values = [('loss', loss), ('acc.', acc)]
-                else:
-                    loss = self._train(X_batch, y_batch)
-                    log_values = [('loss', loss)]
-
-                # validation
-                if do_validation and (batch_index == len(batches) - 1):
-                    if show_accuracy:
-                        val_loss, val_acc = self.test(X_val, y_val, accuracy=True)
-                        log_values += [('val. loss', val_loss), ('val. acc.', val_acc)]
-                    else:
-                        val_loss = self.test(X_val, y_val)
-                        log_values += [('val. loss', val_loss)]
-
-                # logging
-                if verbose:
-                    progbar.update(batch_end, log_values)
-
-            train_history['val_loss'].append(log_values[2][1].tolist())
-            train_history['val_acc'].append(log_values[3][1].tolist())
-        self.train_history_ = train_history
+    return model, history
 
 
 def keras_model_1(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
@@ -190,7 +115,7 @@ def keras_model_1(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
 
     print("Building model...")
 
-    model = MySequential()
+    model = Sequential()
     model.add(Dense(num_features, 400, init='glorot_uniform'))
     model.add(PReLU((400,)))
     model.add(BatchNormalization((400,)))
@@ -220,9 +145,9 @@ def keras_model_1(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
+    history = model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
 
-    return model
+    return model, history
 
 
 def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
@@ -234,7 +159,7 @@ def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
 
     print("Building model...")
 
-    model = MySequential()
+    model = Sequential()
     model.add(Dropout(0.1))
 
     model.add(Dense(num_features, 400, init='glorot_uniform'))
@@ -266,9 +191,9 @@ def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
+    history = model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
 
-    return model
+    return model, history
 
 
 def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
@@ -301,12 +226,12 @@ def main():
     pred = predict_from_dnn_model(lsg_model, X_test)
     df_to_csv(pred, 'oh-lsg-submission.csv')
 
-    keras_model = sample_keras_model(X_train, y_train, max_epochs=54)
+    keras_model, sample_km_history = sample_keras_model(X_train, y_train, max_epochs=54)
     pred = predict_from_dnn_model(keras_model, X_test)
     df_to_csv(pred, 'oh-keras-submission.csv')
 
-    km_1 = keras_model_1(X_train, y_train, max_epochs=250)
-    km_2 = keras_model_2(X_train, y_train, max_epochs=1500)
+    km_1, km_1_history = keras_model_1(X_train, y_train, max_epochs=250)
+    km_2, km_2_history = keras_model_2(X_train, y_train, max_epochs=1500)
     
 
 

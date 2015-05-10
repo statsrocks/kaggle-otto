@@ -8,7 +8,7 @@ import xgboost as xgb
 
 from ggplot import *
 
-from otto_global import load_train_data, load_test_data, df_to_csv
+from otto_global import load_train_data, load_test_data, df_to_csv, save_variable, load_variable
 
 
 def hey_xgb_model(X_train, X_valid, y_train, y_valid, 
