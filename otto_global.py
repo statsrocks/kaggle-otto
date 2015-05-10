@@ -12,6 +12,8 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import log_loss
 
+import itertools
+
 
 def float32(k):
     return np.cast['float32'](k)
@@ -126,3 +128,39 @@ def df_to_csv(df, path_or_buf='hey-submission.csv', index=False, *args, **kwargs
     tmp = pd.read_csv(path_or_buf)
     print(tmp.head())
     return True
+
+
+def draft_grid_run(param_grid, fun):
+    """
+    param_grid is a pd.DataFrame.
+    So we run fun(**param_grid_row) again and again,
+    and store the result inside results (a list) every time.
+    """
+    results = []
+    for row_index, param_grid_row in param_grid.iterrows():
+        param_grid_row = param_grid_row.to_dict()
+        for k,v in param_grid_row.iteritems():
+            # convert back to native python type
+            param_grid_row[k] = v.item() 
+        result = fun(**param_grid_row)
+        results.append(result)
+    return results
+
+
+def expand_grid(*args, **kwargs):
+    """
+    http://stackoverflow.com/questions/12130883/r-expand-grid-function-in-python
+
+    expand_grid([0,1], [1,2,3])
+    expand_grid(a=[0,1], b=[1,2,3])
+    expand_grid([0,1], b=[1,2,3])
+    """
+    columns = []
+    lst = []
+    if args:
+        columns += xrange(len(args))
+        lst += args
+    if kwargs:
+        columns += kwargs.iterkeys()
+        lst += kwargs.itervalues()
+    return pd.DataFrame(list(itertools.product(*lst)), columns=columns)
