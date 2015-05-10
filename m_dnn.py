@@ -18,6 +18,7 @@ from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import PReLU
 from keras.utils import np_utils, generic_utils
+from keras.optimizers import SGD, Adagrad, Adadelta, RMSprop, Adam
 
 from ggplot import *
 
@@ -100,10 +101,175 @@ def sample_keras_model(X_train, y_train, max_epochs=20, batch_size=16, train_siz
     print("Training model...")
     X = X_train
     y = np_utils.to_categorical(y_train)
-    model.fit(X, y, nb_epoch=max_epochs, batch_size=16, verbose=2,validation_split=1-train_size, show_accuracy=True)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2,validation_split=1-train_size, show_accuracy=True)
 
     return model
-    
+
+
+
+class MySequential(Sequential):
+    """
+    After fitting, we can check the val_loss and val_acc in model.train_history_
+    """
+    def fit(self, X, y, batch_size=128, nb_epoch=100, verbose=1,
+            validation_split=0., validation_data=None, shuffle=True, show_accuracy=False):
+        from keras.models import standardize_y, Progbar, make_batches
+        y = standardize_y(y)
+
+        do_validation = False
+        if validation_data:
+            try:
+                X_val, y_val = validation_data
+            except:
+                raise Exception("Invalid format for validation data; provide a tuple (X_val, y_val).")
+            do_validation = True
+            y_val = standardize_y(y_val)
+            if verbose:
+                print("Train on %d samples, validate on %d samples" % (len(y), len(y_val)))
+        else:
+            if 0 < validation_split < 1:
+                # If a validation split size is given (e.g. validation_split=0.2)
+                # then split X into smaller X and X_val,
+                # and split y into smaller y and y_val.
+                do_validation = True
+                split_at = int(len(X) * (1 - validation_split))
+                (X, X_val) = (X[0:split_at], X[split_at:])
+                (y, y_val) = (y[0:split_at], y[split_at:])
+                if verbose:
+                    print("Train on %d samples, validate on %d samples" % (len(y), len(y_val)))
+
+        index_array = np.arange(len(X))
+        train_history = {'val_acc':[], 'val_loss':[]}
+        for epoch in range(nb_epoch):
+            if verbose:
+                print('Epoch', epoch)
+                progbar = Progbar(target=len(X), verbose=verbose)
+            if shuffle:
+                np.random.shuffle(index_array)
+
+            batches = make_batches(len(X), batch_size)
+            for batch_index, (batch_start, batch_end) in enumerate(batches):
+                if shuffle:
+                    batch_ids = index_array[batch_start:batch_end]
+                else:
+                    batch_ids = slice(batch_start, batch_end)
+                X_batch = X[batch_ids]
+                y_batch = y[batch_ids]
+
+                if show_accuracy:
+                    loss, acc = self._train_with_acc(X_batch, y_batch)
+                    log_values = [('loss', loss), ('acc.', acc)]
+                else:
+                    loss = self._train(X_batch, y_batch)
+                    log_values = [('loss', loss)]
+
+                # validation
+                if do_validation and (batch_index == len(batches) - 1):
+                    if show_accuracy:
+                        val_loss, val_acc = self.test(X_val, y_val, accuracy=True)
+                        log_values += [('val. loss', val_loss), ('val. acc.', val_acc)]
+                    else:
+                        val_loss = self.test(X_val, y_val)
+                        log_values += [('val. loss', val_loss)]
+
+                # logging
+                if verbose:
+                    progbar.update(batch_end, log_values)
+
+            train_history['val_loss'].append(log_values[2][1].tolist())
+            train_history['val_acc'].append(log_values[3][1].tolist())
+        self.train_history_ = train_history
+
+
+def keras_model_1(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
+    """
+    ~0.5000 at epoch ~350
+    """
+    num_classes = len(np.unique(y_train))
+    num_features = X_train.shape[1]
+
+    print("Building model...")
+
+    model = MySequential()
+    model.add(Dense(num_features, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, num_classes, init='glorot_uniform'))
+    model.add(Activation('softmax'))
+
+    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.4, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+
+    print("Training model...")
+    X = X_train
+    y = np_utils.to_categorical(y_train)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
+
+    return model
+
+
+def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
+    """
+    ~0.4710 at epcoh 1139 (from 0) after 3 hours
+    """
+    num_classes = len(np.unique(y_train))
+    num_features = X_train.shape[1]
+
+    print("Building model...")
+
+    model = MySequential()
+    model.add(Dropout(0.1))
+
+    model.add(Dense(num_features, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, 400, init='glorot_uniform'))
+    model.add(PReLU((400,)))
+    model.add(BatchNormalization((400,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(400, num_classes, init='glorot_uniform'))
+    model.add(Activation('softmax'))
+
+    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.1, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+
+    print("Training model...")
+    X = X_train
+    y = np_utils.to_categorical(y_train)
+    model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
+
+    return model
+
 
 def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
     """
@@ -138,6 +304,9 @@ def main():
     keras_model = sample_keras_model(X_train, y_train, max_epochs=54)
     pred = predict_from_dnn_model(keras_model, X_test)
     df_to_csv(pred, 'oh-keras-submission.csv')
+
+    km_1 = keras_model_1(X_train, y_train, max_epochs=250)
+    km_2 = keras_model_2(X_train, y_train, max_epochs=1500)
     
 
 
