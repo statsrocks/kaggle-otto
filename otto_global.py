@@ -171,6 +171,18 @@ def expand_grid(*args, **kwargs):
         lst += kwargs.itervalues()
     return pd.DataFrame(list(itertools.product(*lst)), columns=columns)
 
+def cbind_lists(*args, **kwargs):
+    df = pd.DataFrame()
+    if args:
+        for arg in args:
+            df = pd.concat([df, pd.DataFrame(arg)], axis = 1)
+    if kwargs:
+        for kwarg in kwargs:
+            print(kwarg)
+            df = pd.concat([df, pd.DataFrame(kwarg)], axis = 1)
+
+    return df
+
 def save_variable(obj, file_name, recursionlimit=10000):
     sys.setrecursionlimit(recursionlimit)
     with open(file_name, 'wb') as f:
