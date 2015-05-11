@@ -96,20 +96,20 @@ def grid_xgb_wrapper(eta=0.3,
     return bst
 
 
-param_grid = {'eta':stats_sci.uniform(loc = 0.001, scale = 0.999),
+param_grid = {'eta':stats_sci.uniform(loc = 0.0001, scale = 0.3),
     'gamma': stats_sci.uniform(loc = 0.001, scale = 0.999), 
     'max_depth':stats_sci.uniform(loc = 1, scale = 9),
     'min_child_weight':stats_sci.uniform(loc = 1, scale = 9),
     'colsample_bytree':stats_sci.uniform(loc = 0.7, scale = 0.3),
     'subsample':stats_sci.uniform(loc = 0.7, scale = 0.3)}
-param_list = list(ParameterSampler(param_grid, n_iter=50))
+param_list = list(ParameterSampler(param_grid, n_iter=500))
 eta = [d['eta'] for d in param_list]
 gamma = [d['gamma'] for d in param_list]
 max_depth = [round(d['max_depth']) for d in param_list]
 min_child_weight = [round(d['min_child_weight']) for d in param_list]
 colsample_bytree = [d['colsample_bytree'] for d in param_list]
 subsample = [d['subsample'] for d in param_list]
-num_round = [5000 for d in param_list]
+num_round = [50000 for d in param_list]
 early_stopping_rounds = [99 for d in param_list]
 
 
@@ -123,4 +123,11 @@ grid_1 = draft_grid_run(param_grid, grid_xgb_wrapper)
 
 score_list = [m.best_score for m in grid_1]
 param_grid_tot = pd.concat([param_grid, pd.DataFrame(score_list)], axis=1)
+
+param_grid_tot_saved = joblib.load('param_score_df.dat')
+param_grid_tot = pd.concat([param_grid_tot, param_grid_tot_saved], axis=1)
+joblib.dump(param_grid_tot, filename = 'param_score_df.dat')
+
+
+
 
