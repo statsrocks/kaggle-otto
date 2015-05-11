@@ -14,7 +14,7 @@ from otto_global import load_train_data, load_test_data, df_to_csv, save_variabl
 def hey_xgb_model(X_train, X_valid, y_train, y_valid, 
     xgb_param=None,
     num_round=50,
-    num_fold=3, use_cv=False):
+    num_fold=3, early_stopping_rounds=100, use_cv=False):
     """
     The function returns the fitted xgb model.
     """
@@ -37,7 +37,7 @@ def hey_xgb_model(X_train, X_valid, y_train, y_valid,
         watchlist = [ (xg_train,'train')]
 
     if not use_cv:
-        bst = xgb.train(params=xgb_param, dtrain=xg_train, num_boost_round=num_round, evals=watchlist)
+        bst = xgb.train(params=xgb_param, dtrain=xg_train, num_boost_round=num_round, evals=watchlist, early_stopping_rounds=early_stopping_rounds)
     elif use_cv:
         bst = xgb.cv(params=xgb_param, dtrain=xg_train, num_boost_round=num_round, nfold=num_fold)
         bst = _parse_bst_cv_result(bst)

@@ -15,6 +15,7 @@ from sklearn.metrics import log_loss
 import sys
 import cPickle as pickle
 import itertools
+import gc
 
 
 def float32(k):
@@ -140,6 +141,7 @@ def draft_grid_run(param_grid, fun):
     """
     results = []
     for row_index, param_grid_row in param_grid.iterrows():
+        gc.collect()
         param_grid_row = param_grid_row.to_dict()
         for k,v in param_grid_row.iteritems():
             # convert back to native python type
@@ -147,6 +149,7 @@ def draft_grid_run(param_grid, fun):
         sys.stderr.write('running {}-th, w/ parameters {}\n'.format(row_index, param_grid_row))
         result = fun(**param_grid_row)
         results.append(result)
+        gc.collect()
     return results
 
 

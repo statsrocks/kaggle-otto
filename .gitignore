@@ -4,6 +4,7 @@
 *.ipynb
 *.pickle
 *.log
+.*
 *submission.csv
 data/train.csv
 data/test.csv
