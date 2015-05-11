@@ -6,8 +6,6 @@ import pandas as pd
 from scipy.stats import randint as sp_randint
 from sklearn.metrics import log_loss
 import xgboost as xgb
-import optunity as opt
-from ggplot import *
 
 from otto_global import load_train_data, load_test_data, df_to_csv, draft_grid_run, expand_grid
 from m_xgb import hey_xgb_model, predict_from_xgb_model
@@ -91,5 +89,6 @@ def grid_xgb_wrapper(eta=0.3,
     bst = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_param, num_round, num_fold, early_stopping_rounds=early_stopping_rounds, use_cv=False)
     return None
 
-param_grid = expand_grid(eta=[0.05], num_round=[2000], gamma=[0.9,0.8,0.7], max_depth=[5],min_child_weight=[4,5],colsample_bytree=[0.5, 0.75,0.78,0.8, 0.82,0.85], subsample=[0.5, 0.8,0.88,0.9,0.92], early_stopping_rounds=[99])
+#param_grid = expand_grid(eta=[0.05], num_round=[2000], gamma=[0.9,0.8,0.7], max_depth=[5],min_child_weight=[4,5],colsample_bytree=[0.5, 0.75,0.78,0.8, 0.82,0.85], subsample=[0.5, 0.8,0.88,0.9,0.92], early_stopping_rounds=[99])
+param_grid = expand_grid(eta=[0.04], num_round=[4000], gamma=[0.7,0.75,0.85, 0.9], max_depth=[5,6,7],min_child_weight=[4,5, 6],colsample_bytree=[0.5, 0.6, 0.7, 0.75], subsample=[0.5, 0.65, 0.8, 0.88], early_stopping_rounds=[100], nthread=[36])
 gird_1 = draft_grid_run(param_grid, grid_xgb_wrapper)
