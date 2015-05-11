@@ -2,13 +2,17 @@ from __future__ import print_function, division, with_statement
 
 import numpy as np
 import scipy as sp
+import scipy.stats as stats_sci
 import pandas as pd
 from scipy.stats import randint as sp_randint
 from sklearn.metrics import log_loss
+from sklearn.grid_search import ParameterSampler
 import xgboost as xgb
 
-from otto_global import load_train_data, load_test_data, df_to_csv, draft_grid_run, expand_grid
+from otto_global import load_train_data, load_test_data, df_to_csv, draft_grid_run, expand_grid, cbind_lists
 from m_xgb import hey_xgb_model, predict_from_xgb_model
+
+import joblib
 
 
 
@@ -87,8 +91,45 @@ def grid_xgb_wrapper(eta=0.3,
     }
     num_round = int(num_round)
     bst = hey_xgb_model(X_train, X_valid, y_train, y_valid, xgb_param, num_round, num_fold, early_stopping_rounds=early_stopping_rounds, use_cv=False)
-    return None
+    return bst
 
+# these few lines are the original version run on aws.
+# but let's try fucking random search instead
 #param_grid = expand_grid(eta=[0.05], num_round=[2000], gamma=[0.9,0.8,0.7], max_depth=[5],min_child_weight=[4,5],colsample_bytree=[0.5, 0.75,0.78,0.8, 0.82,0.85], subsample=[0.5, 0.8,0.88,0.9,0.92], early_stopping_rounds=[99])
-param_grid = expand_grid(eta=[0.04], num_round=[4000], gamma=[0.7,0.75,0.85, 0.9], max_depth=[5,6,7],min_child_weight=[4,5, 6],colsample_bytree=[0.5, 0.6, 0.7, 0.75], subsample=[0.5, 0.65, 0.8, 0.88], early_stopping_rounds=[100], nthread=[36])
-gird_1 = draft_grid_run(param_grid, grid_xgb_wrapper)
+#param_grid = expand_grid(eta=[0.04], num_round=[4000], gamma=[0.7,0.75,0.85, 0.9], max_depth=[5,6,7],min_child_weight=[4,5, 6],colsample_bytree=[0.5, 0.6, 0.7, 0.75], subsample=[0.5, 0.65, 0.8, 0.88], early_stopping_rounds=[100], nthread=[36])
+#gird_1 = draft_grid_run(param_grid, grid_xgb_wrapper)
+
+
+param_grid = {'eta':stats_sci.uniform(loc = 0.0001, scale = 0.3),
+    'gamma': stats_sci.uniform(loc = 0.001, scale = 0.999), 
+    'max_depth':stats_sci.uniform(loc = 1, scale = 9),
+    'min_child_weight':stats_sci.uniform(loc = 1, scale = 9),
+    'colsample_bytree':stats_sci.uniform(loc = 0.7, scale = 0.3),
+    'subsample':stats_sci.uniform(loc = 0.7, scale = 0.3)}
+param_list = list(ParameterSampler(param_grid, n_iter=500))
+eta = [d['eta'] for d in param_list]
+gamma = [d['gamma'] for d in param_list]
+max_depth = [round(d['max_depth']) for d in param_list]
+min_child_weight = [round(d['min_child_weight']) for d in param_list]
+colsample_bytree = [d['colsample_bytree'] for d in param_list]
+subsample = [d['subsample'] for d in param_list]
+num_round = [50000 for d in param_list]
+early_stopping_rounds = [99 for d in param_list]
+
+
+#param_grid = cbind_lists(eta = eta, num_round=num_round, gamma=ggamma, max_depth=max_depth,min_child_weight=min_child_weight,colsample_bytree=colsample_bytree, subsample=subsample, early_stopping_rounds=early_stopping_rounds)
+
+param_grid = cbind_lists(eta, num_round, gamma, max_depth,min_child_weight,colsample_bytree, subsample, early_stopping_rounds)
+param_grid.columns = ['eta','num_round', 'gamma', 'max_depth', 'min_child_weight', 'colsample_bytree', 'subsample', 'early_stopping_rounds']
+
+#param_grid = expand_grid(eta=eta, num_round=num_round, gamma=gamma, max_depth=max_depth,min_child_weight=min_child_weight,colsample_bytree=colsample_bytree, subsample=subsample, early_stopping_rounds=early_stopping_rounds)
+grid_1 = draft_grid_run(param_grid, grid_xgb_wrapper)
+
+score_list = [m.best_score for m in grid_1]
+param_grid_tot = pd.concat([param_grid, pd.DataFrame(score_list)], axis=1)
+
+param_grid_tot_saved = joblib.load('param_score_df.dat')
+param_grid_tot = pd.concat([param_grid_tot, param_grid_tot_saved], axis=1)
+joblib.dump(param_grid_tot, filename = 'param_score_df.dat')
+
+
