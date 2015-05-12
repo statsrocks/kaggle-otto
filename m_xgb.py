@@ -84,10 +84,11 @@ def _parse_bst_cv_result(bst_cv_result,
 
 valuable_params = [
     # [1410]  train-mlogloss:0.179429 valid-mlogloss:0.450791
+    # full train kaggle 0.44486
     {'colsample_bytree': 0.6, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 1411, 'max_depth': 7.0, 'gamma': 0.7},
 
     # [1641]  train-mlogloss:0.188990 valid-mlogloss:0.450980
-    # full train kaggle 0.44486
+    # full train kaggle 0.44551
     {'colsample_bytree': 0.5, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 1642, 'max_depth': 7.0, 'gamma': 0.9},
 
     # 0.450 at [6434]
