@@ -22,7 +22,7 @@ from keras.optimizers import SGD, Adagrad, Adadelta, RMSprop, Adam
 
 from ggplot import *
 
-from otto_global import logloss_mc, load_train_data, load_test_data, df_to_csv, float32, int32, save_variable, load_variable
+from otto_global import log_loss_mc, load_train_data, load_test_data, df_to_csv, float32, int32, save_variable, load_variable
 
 
 
@@ -196,6 +196,51 @@ def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
     return model, history
 
 
+def keras_model_oh(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
+    """
+    ~~
+    """
+    num_classes = len(np.unique(y_train))
+    num_features = X_train.shape[1]
+
+    print("Building model...")
+
+    model = Sequential()
+    model.add(Dropout(0.05))
+
+    model.add(Dense(num_features, 1024, init='glorot_uniform'))
+    model.add(PReLU((1024,)))
+    model.add(BatchNormalization((1024,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(1024, 512, init='glorot_uniform'))
+    model.add(PReLU((512,)))
+    model.add(BatchNormalization((512,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(512, 256, init='glorot_uniform'))
+    model.add(PReLU((256,)))
+    model.add(BatchNormalization((256,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(256, 128, init='glorot_uniform'))
+    model.add(PReLU((128,)))
+    model.add(BatchNormalization((128,)))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(128, num_classes, init='glorot_uniform'))
+    model.add(Activation('softmax'))
+
+    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.1, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+
+    print("Training model...")
+    X = X_train
+    y = np_utils.to_categorical(y_train)
+    history = model.fit(X, y, nb_epoch=max_epochs, batch_size=batch_size, verbose=2, validation_split=1-train_size, show_accuracy=True)
+
+    return model, history
+
 def predict_from_dnn_model(dnn_model, X_test, X_test_ids=None, get_df=True):
     """
     It accepts the result of dnn model and predict the probabilites of test.
@@ -232,6 +277,7 @@ def main():
 
     km_1, km_1_history = keras_model_1(X_train, y_train, max_epochs=250)
     km_2, km_2_history = keras_model_2(X_train, y_train, max_epochs=1500)
+    km_oh, km_oh_history = keras_model_oh(X_train, y_train, max_epochs=1500)
     
 
 
