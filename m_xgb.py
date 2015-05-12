@@ -91,6 +91,7 @@ valuable_params = [
     {'colsample_bytree': 0.5, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 1642, 'max_depth': 7.0, 'gamma': 0.9},
 
     # 0.450 at [6434]
+    # however, 0.50886 on lb...
     {'colsample_bytree': 0.4210893122302564, 'min_child_weight': 2.0, 'subsample': 0.4408433569894518, 'eta': 0.0018541797977871862, 'early_stopping_rounds': 100.0, 'num_round': 50000.0, 'max_depth': 7.0, 'gamma': 0.7315742663464265},
 
     # [1360]    train-mlogloss:0.192825 valid-mlogloss:0.454689
