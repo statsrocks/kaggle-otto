@@ -82,7 +82,7 @@ def _parse_bst_cv_result(bst_cv_result,
     return df
 
 
-valuable_params = {
+valuable_params = [
     # [1410]  train-mlogloss:0.179429 valid-mlogloss:0.450791
     {'colsample_bytree': 0.6, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 1411, 'max_depth': 7.0, 'gamma': 0.7},
 
@@ -90,13 +90,13 @@ valuable_params = {
     # full train kaggle 0.44486
     {'colsample_bytree': 0.5, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 1642, 'max_depth': 7.0, 'gamma': 0.9},
 
-    #
+    # 0.450 at [6434]
     {'colsample_bytree': 0.4210893122302564, 'min_child_weight': 2.0, 'subsample': 0.4408433569894518, 'eta': 0.0018541797977871862, 'early_stopping_rounds': 100.0, 'num_round': 50000.0, 'max_depth': 7.0, 'gamma': 0.7315742663464265},
 
     # [1360]    train-mlogloss:0.192825 valid-mlogloss:0.454689
     # full train kaggle 0.44783
     { 'eta': 0.04, 'gamma': 0.7, 'max_depth': 7,'min_child_weight': 4, 'max_delta_step': 0, 'colsample_bytree': 0.5, 'subsample': 0.5, 'objective': 'multi:softprob', 'eval_metric': 'mlogloss', 'num_class': 9, 'nthread': 8, 'early_stopping_rounds':100, 'num_round':1361, 'seed': np.random.randint(0, 2**32) }
-}
+]
 
 def main():
     train_size = 0.8
