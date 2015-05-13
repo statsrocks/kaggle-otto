@@ -55,7 +55,7 @@ def turn_class_list_to_int_list(my_array):
     return new_array.astype('int')
 
 
-def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False):
+def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False, square_root_it=False, square_root_base=0.375):
     """
     Load the train data.
     If full_train=False (default), the function would return (X_train, X_valid, y_train, y_valid, scaler) based on the train_size.
@@ -74,6 +74,10 @@ def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False)
     np.random.shuffle(X)
     X[:, -1] = turn_class_list_to_int_list(X[:, -1])
     X = X.astype(float)
+
+    # square root it?
+    if square_root_it:
+        X[:, 1:-1] = np.sqrt(X[:, 1:-1] + square_root_base)
 
     # whether scale it or not, we return the scaler!
     scaler = StandardScaler()
@@ -96,7 +100,7 @@ def load_train_data(path=None, train_size=0.8, full_train=False, scale_it=False)
             y_train.astype(int), y_valid, scaler)
 
 
-def load_test_data(path=None, scaler=None):
+def load_test_data(path=None, scaler=None, square_root_it=False, square_root_base=0.375):
     """
     Load the test data.
     It returns (X_test, X_test_ids).
@@ -114,6 +118,9 @@ def load_test_data(path=None, scaler=None):
     X = X.astype(float)
     
     X_test, X_test_ids = X[:, 1:].astype(float), X[:, 0].astype(int)
+
+    if square_root_it:
+        X_test = np.sqrt(X_test + square_root_base)
 
     # we want to scale it based on the training set!
     if not (scaler is None):

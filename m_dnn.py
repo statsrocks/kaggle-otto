@@ -280,6 +280,12 @@ def main():
     km_oh, km_oh_history = keras_model_oh(X_train, y_train, max_epochs=1500)
     
 
+    X_train, _, y_train, _, scaler = load_train_data(full_train=True, scale_it=True, square_root_it=True)
+    X_train, y_train = float32(X_train), int32(y_train)
+    X_test, X_test_ids = load_test_data(scaler=scaler, square_root_it=True)
+    X_test = float32(X_test)
+
+
 
 if __name__ == '__main__':
     main()
