@@ -198,7 +198,9 @@ def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
 
 def keras_model_oh(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
     """
-    ~~
+    modified from h2o version, 
+    local valid-mlogloss ~0.460 at epoch 46+0
+    maybe average of 20 such model is better?
     """
     num_classes = len(np.unique(y_train))
     num_features = X_train.shape[1]
@@ -223,16 +225,11 @@ def keras_model_oh(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.
     model.add(BatchNormalization((256,)))
     model.add(Dropout(0.5))
 
-    model.add(Dense(256, 128, init='glorot_uniform'))
-    model.add(PReLU((128,)))
-    model.add(BatchNormalization((128,)))
-    model.add(Dropout(0.5))
-
-    model.add(Dense(128, num_classes, init='glorot_uniform'))
+    model.add(Dense(256, num_classes, init='glorot_uniform'))
     model.add(Activation('softmax'))
 
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.1, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+    model.compile(loss='categorical_crossentropy', optimizer='adam')
 
     print("Training model...")
     X = X_train
@@ -277,13 +274,15 @@ def main():
 
     km_1, km_1_history = keras_model_1(X_train, y_train, max_epochs=250)
     km_2, km_2_history = keras_model_2(X_train, y_train, max_epochs=1500)
-    km_oh, km_oh_history = keras_model_oh(X_train, y_train, max_epochs=1500)
     
 
     X_train, _, y_train, _, scaler = load_train_data(full_train=True, scale_it=True, square_root_it=True)
     X_train, y_train = float32(X_train), int32(y_train)
     X_test, X_test_ids = load_test_data(scaler=scaler, square_root_it=True)
     X_test = float32(X_test)
+    km_oh, km_oh_history = keras_model_oh(X_train, y_train, max_epochs=500)
+    pred = predict_from_dnn_model(km_oh, X_test)
+    df_to_csv(pred, 'powerful-dnn-submission.csv'.format(i))
 
 
 
