@@ -199,8 +199,8 @@ def keras_model_2(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.8
 def keras_model_oh(X_train, y_train, max_epochs=20, batch_size=16, train_size=0.85):
     """
     modified from h2o version, 
-    local valid-mlogloss ~0.460 at epoch 46+0
-    maybe average of 20 such model is better?
+    local valid-mlogloss ~0.470 at epoch 46+0
+    average of 20 such models at max_epochs=47 get kaggle 0.45183
     """
     num_classes = len(np.unique(y_train))
     num_features = X_train.shape[1]
