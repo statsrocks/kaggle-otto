@@ -97,7 +97,21 @@ valuable_params = [
 
     # [1360]    train-mlogloss:0.192825 valid-mlogloss:0.454689
     # full train kaggle 0.44783
-    { 'eta': 0.04, 'gamma': 0.7, 'max_depth': 7,'min_child_weight': 4, 'max_delta_step': 0, 'colsample_bytree': 0.5, 'subsample': 0.5, 'objective': 'multi:softprob', 'eval_metric': 'mlogloss', 'num_class': 9, 'nthread': 8, 'early_stopping_rounds':100, 'num_round':1361, 'seed': np.random.randint(0, 2**32) }
+    { 'eta': 0.04, 'gamma': 0.7, 'max_depth': 7,'min_child_weight': 4, 'max_delta_step': 0, 'colsample_bytree': 0.5, 'subsample': 0.5, 'objective': 'multi:softprob', 'eval_metric': 'mlogloss', 'num_class': 9, 'nthread': 8, 'early_stopping_rounds':100, 'num_round':1361, 'seed': np.random.randint(0, 2**32) },
+
+
+    # interesting
+    # based on the first two params
+    # for the same split train and test, first param:[1317]  train-mlogloss:0.182814 valid-mlogloss:0.463639
+    # this param: [1339]  train-mlogloss:0.179700 valid-mlogloss:0.462997
+    # when using 'colsample_bytree': 0.62, 'gamma': 0.68 , we get worst
+    {'colsample_bytree': 0.61, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 2500, 'max_depth': 7.0, 'gamma': 0.69},
+
+    # interesting
+    # based on the first two params
+    # for the same split train and test, first param:[1317]  train-mlogloss:0.182814 valid-mlogloss:0.463639
+    # this param: [1401]  train-mlogloss:0.174516 valid-mlogloss:0.462797
+    {'colsample_bytree': 0.605, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 2500, 'max_depth': 7.0, 'gamma': 0.695}
 ]
 
 def main():
