@@ -282,7 +282,7 @@ def main():
     X_test = float32(X_test)
     km_oh, km_oh_history = keras_model_oh(X_train, y_train, max_epochs=500)
     pred = predict_from_dnn_model(km_oh, X_test)
-    df_to_csv(pred, 'powerful-dnn-submission.csv'.format(i))
+    df_to_csv(pred, 'powerful-dnn-submission.csv')
 
 
 
