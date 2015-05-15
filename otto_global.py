@@ -210,3 +210,11 @@ def average_of_list_of_dfs(list_of_dfs):
     k = pd.concat(list_of_dfs)
     av = k.groupby(k.index).mean()
     return av
+
+
+def proba_mat_to_df(proba_mat):
+    nrow_test = proba_mat.shape[0]
+    X_test_ids = np.array(range(1, nrow_test+1))
+    df = pd.concat([pd.Series(X_test_ids), pd.DataFrame(proba_mat)], axis=1)
+    df.columns = ['id','Class_1','Class_2','Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    return df
