@@ -8,7 +8,7 @@ import xgboost as xgb
 
 from ggplot import *
 
-from otto_global import load_train_data, load_test_data, df_to_csv, save_variable, load_variable
+from otto_global import load_train_data, load_test_data, df_to_csv, save_variable, load_variable, average_of_list_of_dfs
 
 
 def hey_xgb_model(X_train, X_valid, y_train, y_valid, 
@@ -111,7 +111,12 @@ valuable_params = [
     # based on the first two params
     # for the same split train and test, first param:[1317]  train-mlogloss:0.182814 valid-mlogloss:0.463639
     # this param: [1401]  train-mlogloss:0.174516 valid-mlogloss:0.462797
-    {'colsample_bytree': 0.605, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 2500, 'max_depth': 7.0, 'gamma': 0.695}
+    {'colsample_bytree': 0.605, 'nthread': 36.0, 'min_child_weight': 4.0, 'subsample': 0.8, 'eta': 0.04, 'early_stopping_rounds': 100.0, 'num_round': 2500, 'max_depth': 7.0, 'gamma': 0.695},
+
+    # based on the first two params
+    # for the same split train and test, second param: [1571]   train-mlogloss:0.192842 valid-mlogloss:0.451824
+    # this param [1897] train-mlogloss:0.172259 valid-mlogloss:0.447899
+    {'colsample_bytree': 0.5643669584804276, 'min_child_weight': 4.0, 'subsample': 0.8754254004223411, 'eta': 0.028854422103924096, 'early_stopping_rounds': 100.0, 'num_round': 6000.0, 'max_depth': 8.0, 'gamma': 0.8236709847384176}
 ]
 
 def main():
