@@ -201,3 +201,12 @@ def load_variable(file_name):
     usage: something = load_variable('hey.pickle')
     """
     return pickle.load(open(file_name, 'rb'))
+
+
+def average_of_list_of_dfs(list_of_dfs):
+    """
+    given a list of dfs, return the average of those dfs
+    """
+    k = pd.concat(list_of_dfs)
+    av = k.groupby(k.index).mean()
+    return av
