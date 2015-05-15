@@ -51,7 +51,7 @@ def main():
     # rf
     # when n_estimators=100, without calibration, loss = ~0.6
     # when n_estimators=100, with calibration, loss = ~0.483
-    clf = RandomForestClassifier(n_estimators=100, n_jobs=-1, verbose=1)
+    clf = RandomForestClassifier(n_estimators=600, n_jobs=-1, verbose=1)
     clf.fit(X_train, y_train)
     clf_isotonic = CalibratedClassifierCV(clf, cv=5, method='isotonic')
     clf_isotonic.fit(X_train, y_train)
@@ -60,19 +60,28 @@ def main():
     
 
     # linear svc
-    # clf = LinearSVC(C=1.0)
-    # clf.fit(X_train, y_train)
-    # clf_isotonic = CalibratedClassifierCV(clf, cv=5, method='isotonic')
-    # clf_isotonic.fit(X_train, y_train)
-    # y_valid_predicted = clf_isotonic.predict_proba(X_valid)
-    # log_loss_mc(y_valid, y_valid_predicted)
+    clf = LinearSVC(C=1.0, verbose=2)
+    clf.fit(X_train, y_train)
+    prob_pos = clf.decision_function(X_valid)
+    prob_pos = \
+            (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
+    y_valid_predicted = prob_pos
+    log_loss_mc(y_valid, y_valid_predicted)
+    clf_isotonic = CalibratedClassifierCV(clf, cv=5, method='isotonic')
+    clf_isotonic.fit(X_train, y_train)
+    y_valid_predicted = clf_isotonic.predict_proba(X_valid)
+    log_loss_mc(y_valid, y_valid_predicted)
 
 
     # well, non-linear svc
-    # clf = SVC(C=1.0, kernel='rbf', degree=3, gamma=0.0, coef0=0.0, shrinking=True, probability=True, cache_size=1000, class_weight=None, verbose=True, max_iter=-1)
-    # clf.fit(X_train, y_train)
-    # y_valid_predicted = clf.predict_proba(X_valid)
-    # #clf_isotonic = CalibratedClassifierCV(clf, cv=5, method='isotonic')
-    # #clf_isotonic.fit(X_train, y_train)
-    # #y_valid_predicted = clf_isotonic.predict_proba(X_valid)
-    # log_loss_mc(y_valid, y_valid_predicted)
+    clf = SVC(C=1.0, kernel='rbf', degree=3, gamma=0.0, coef0=0.0, shrinking=True, probability=False, cache_size=1000, class_weight=None, verbose=True, max_iter=-1)
+    clf.fit(X_train, y_train)
+    prob_pos = clf.decision_function(X_valid)
+    prob_pos = \
+            (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
+    y_valid_predicted = prob_pos
+    log_loss_mc(y_valid, y_valid_predicted)
+    #clf_isotonic = CalibratedClassifierCV(clf, cv=5, method='isotonic')
+    #clf_isotonic.fit(X_train, y_train)
+    #y_valid_predicted = clf_isotonic.predict_proba(X_valid)
+    #log_loss_mc(y_valid, y_valid_predicted)
