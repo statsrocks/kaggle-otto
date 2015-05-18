@@ -116,6 +116,7 @@ valuable_params = [
     # based on the first two params
     # for the same split train and test, second param: [1571]   train-mlogloss:0.192842 valid-mlogloss:0.451824
     # this param [1897] train-mlogloss:0.172259 valid-mlogloss:0.447899
+    # maybe at epcoh 2110 for transformed scaled is better! fuck!
     {'colsample_bytree': 0.5643669584804276, 'min_child_weight': 4.0, 'subsample': 0.8754254004223411, 'eta': 0.028854422103924096, 'early_stopping_rounds': 100.0, 'num_round': 6000.0, 'max_depth': 8.0, 'gamma': 0.8236709847384176}
 ]
 
